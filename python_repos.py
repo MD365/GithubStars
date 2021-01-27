@@ -1,9 +1,11 @@
+# coding: utf-8
+
 import requests
 import pygal
 from pygal.style import LightColorizedStyle as LCS,LightenStyle as LS
 #执行API调用并存储响应
 url = 'https://api.github.com/search/repositories?q=language:python'
-r = requests.get(url)
+r = requests.get(url,verify=False)
 print("status code :",r.status_code)
 
 #将响应存储在一个变量中
@@ -13,10 +15,21 @@ print("total repostiories",response_dict['total_count'])
 #探索有关仓库的信息
 repo_dicts = response_dict['items']
 
-names, stars = [], []
+names,plot_dicts = [] , []
 for repo_dict in repo_dicts:
     names.append(repo_dict['name'])
-    stars.append(repo_dict['stargazers_count'])
+
+    plot_dict = {
+        'value': repo_dict['stargazers_count'],
+        'label':str(repo_dict['description']),
+        'xlink':repo_dict['html_url'],
+    }
+    plot_dicts.append(plot_dict)
+# print(plot_dicts)
+# names, stars = [], []
+# for repo_dict in repo_dicts:
+#     names.append(repo_dict['name'])
+#     stars.append(repo_dict['stargazers_count'])
 
 #可视化
 my_style = LS('#333366', base_style=LCS)
@@ -36,7 +49,7 @@ chart = pygal.Bar( my_config,style=my_style)
 chart.title = 'Most-Starred python projects on Github'
 chart.x_labels = names
 
-chart.add('',stars)
+chart.add('',plot_dicts)
 chart.render_to_file('python.repos.svg')
 
 
